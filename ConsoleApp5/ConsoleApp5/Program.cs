@@ -1,626 +1,129 @@
 ﻿using System;
-class consoleApp5
+
+class ConsoleApp5
 {
+    static void CargarNave(int[,,] nave, int ala, int componente, int sector, int cantidad)
+    {
+        nave[ala, componente, sector] += cantidad;
+    }
+
+    static void MostrarNave(int[,,] nave, int numeroJugador)
+    {
+        Console.WriteLine($"\n--- ESTADO DE LA NAVE JUGADOR {numeroJugador} ---");
+        string[] alas = { "Izquierda", "Derecha" };
+        string[] componentes = { "Mando", "Motores", "Armamento" };
+
+        for (int a = 0; a < 2; a++)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                for (int s = 0; s < 4; s++)
+                {
+                    if (nave[a, c, s] > 0)
+                    {
+                        Console.WriteLine($"Ala {alas[a]} -> Cápsula {componentes[c]} -> Sector {s + 1}: {nave[a, c, s]} tripulantes.");
+                    }
+                }
+            }
+        }
+        Console.WriteLine("-------------------------------------------\n");
+    }
+
     static void Main()
     {
         int[,,] nave1 = new int[2, 3, 4];
         int[,,] nave2 = new int[2, 3, 4];
-        int izq = 0;
-        int der = 0;
-        int mando = 0;
-        int motor = 0;
-        int armamento = 0;
-        int sector1 = 0;
-        int sector2 = 0;
-        int sector3 = 0;
-        int sector4 = 0;
 
-        Console.WriteLine("La guerra galáctica ha comenzado. Dos comandantes se enfrentan en un sector del espacio.\n El objetivo es eliminar a la tripulación enemiga antes de que ellos eliminen la tuya.\n\n");
-        //Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("La guerra galáctica ha comenzado. Dos comandantes se enfrentan en un sector del espacio.\nEl objetivo es eliminar a la tripulación enemiga antes de que ellos eliminen la tuya.\n\n");
+
+        // Bucle para iterar entre los 2 jugadores de forma secuencial
         for (int j = 0; j < 2; j++)
         {
+            // Seleccionamos dinámicamente qué matriz usar según el turno del jugador
+            int[,,] naveActual = (j == 0) ? nave1 : nave2;
             int tripulantes = 20;
-            while (true)
+
+            Console.WriteLine($"TURNO DEL JUGADOR {j + 1}");
+
+            // El jugador distribuye tripulantes hasta que se quede sin ninguno (0)
+            while (tripulantes > 0)
             {
-                Console.WriteLine($"Jugador {j + 1}\n");
-                Console.WriteLine($"Seleccione Ala:  Izq[1], Der[2]\n");
-                string? alas = Console.ReadLine();
+                Console.WriteLine($"Tienes {tripulantes} tripulantes disponibles para asignar.");
+
+                // 1. SELECCIÓN DE ALA
+                int indiceAla = -1;
+                while (indiceAla == -1)
+                {
+                    Console.Write("Seleccione Ala: Izq, Der: ");
+                    string? entradaAla = Console.ReadLine();
+                    if (entradaAla == "1" || entradaAla?.ToLower() == "izq") indiceAla = 0;
+                    else if (entradaAla == "2" || entradaAla?.ToLower() == "der") indiceAla = 1;
+                    else Console.WriteLine("ERROR: Selección de ala inválida.");
+                }
+
+                // 2. SELECCIÓN DE COMPONENTE / CÁPSULA
+                int indiceComponente = -1;
+                while (indiceComponente == -1)
+                {
+                    Console.Write("Seleccione cápsula: Mando, Motores, Armamento: ");
+                    string? entradaCap = Console.ReadLine();
+                    if (entradaCap == "1") indiceComponente = 0;
+                    else if (entradaCap == "2") indiceComponente = 1;
+                    else if (entradaCap == "3") indiceComponente = 2;
+                    else Console.WriteLine("ERROR: Selección de cápsula inválida.");
+                }
+
+                // 3. SELECCIÓN DE SECTOR / HABITACIÓN
+                int indiceSector = -1;
+                while (indiceSector == -1)
+                {
+                    Console.Write("Seleccione sector/habitación: Sector 1, Sector 2, Sector 3, Sector 4: ");
+                    string? entradaSector = Console.ReadLine();
+                    if (int.TryParse(entradaSector, out int sectorElegido) && sectorElegido >= 1 && sectorElegido <= 4)
+                    {
+                        indiceSector = sectorElegido - 1; // Ajustamos a índice base 0 (0 a 3)
+                    }
+                    else Console.WriteLine("ERROR: Selección de sector inválida.");
+                }
+
+                // 4. INGRESO Y VALIDACIÓN DE TRIPULANTES
+                int cantidadTripulantes = 0;
                 while (true)
                 {
-                    if (alas == "Izq" || alas == "izq" || alas == "1")
+                    Console.Write($"¿Cuántos tripulantes ingresará en esta zona? (Disponibles: {tripulantes}): ");
+                    string? entradaTrip = Console.ReadLine();
+
+                    if (int.TryParse(entradaTrip, out cantidadTripulantes))
                     {
-                        Console.WriteLine("Seleccione la zona:  Cápsulas[1] o Habitaciones[2]\n");
-                        string? zonas = Console.ReadLine();
-                        if (zonas == "1")
+                        if (cantidadTripulantes >= 0 && cantidadTripulantes <= tripulantes)
                         {
-                            while (true)
-                            {
-                                Console.WriteLine("Seleccione cápsula:   Mando[1], Motores[2], Armamento[3]");
-                                string? cap = Console.ReadLine();
-                                if (cap == "1")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                mando = mando + numero;
-                                                tripulantes = tripulantes - numero;
-                                                izq = izq + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else if (cap == "2")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                motor = motor + numero;
-                                                tripulantes = tripulantes - numero;
-                                                izq = izq + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else if (cap == "3")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                armamento = armamento + numero;
-                                                tripulantes = tripulantes - numero;
-                                                izq = izq + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else
-                                {
-                                    Console.WriteLine("ERROR: Ingrese un número entero.");
-                                    cap = Console.ReadLine();
-                                }
-                            }
+                            tripulantes -= cantidadTripulantes;
                             break;
-                        }
-                        else if (zonas == "2")
-                        {
-                            while (true)
-                            {
-                                Console.WriteLine("En que sector?   [1], [2], [3], [4]");
-                                string? sec = Console.ReadLine();
-                                if (sec == "1")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                sector1 = sector1 + numero;
-                                                tripulantes = tripulantes - numero;
-                                                izq = izq + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else if (sec == "2")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                sector2 = sector2 + numero;
-                                                tripulantes = tripulantes - numero;
-                                                izq = izq + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else if (sec == "3")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                sector3 = sector3 + numero;
-                                                tripulantes = tripulantes - numero;
-                                                izq = izq + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else if (sec == "4")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                sector4 = sector4 + numero;
-                                                tripulantes = tripulantes - numero;
-                                                izq = izq + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else
-                                {
-                                    Console.WriteLine("ERROR: Ingrese un número entero.");
-                                    sec = Console.ReadLine();
-                                }
-                            }
                         }
                         else
                         {
-                            Console.WriteLine("ERROR: El dato ingresado es incorrecto o no existe.");
-                            Console.WriteLine("Solo hay 2 zonas:    [1] o [2]");
-                            zonas = Console.ReadLine();
+                            Console.WriteLine($"ERROR: Cantidad inválida. Debe ser entre 0 y {tripulantes}.");
                         }
-                        break;
-                    }
-                    else if (alas == "Der" || alas == "der" || alas == "2")
-                    {
-                        Console.WriteLine("Seleccione la zona:  Cápsulas[1] o Habitaciones[2]\n");
-                        string? zonas = Console.ReadLine();
-                        if (zonas == "1")
-                        {
-                            while (true)
-                            {
-                                Console.WriteLine("En que cápsula?   Mando[1], Motores[2], Armamento[3]");
-                                string? cap = Console.ReadLine();
-                                if (cap == "1")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                mando = mando + numero;
-                                                tripulantes = tripulantes - numero;
-                                                der = der + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else if (cap == "2")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                motor = motor + numero;
-                                                tripulantes = tripulantes - numero;
-                                                der = der + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else if (cap == "3")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                armamento = armamento + numero;
-                                                tripulantes = tripulantes - numero;
-                                                der = der + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else
-                                {
-                                    Console.WriteLine("ERROR: Ingrese un número entero.");
-                                    cap = Console.ReadLine();
-                                }
-                            }
-                            break;
-                        }
-                        else if (zonas == "2")
-                        {
-                            while (true)
-                            {
-                                Console.WriteLine("En que sector?   [1], [2], [3], [4]");
-                                string? sec = Console.ReadLine();
-                                if (sec == "1")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                sector1 = sector1 + numero;
-                                                tripulantes = tripulantes - numero;
-                                                der = der + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else if (sec == "2")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                sector2 = sector2 + numero;
-                                                tripulantes = tripulantes - numero;
-                                                der = der + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else if (sec == "3")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                sector3 = sector3 + numero;
-                                                tripulantes = tripulantes - numero;
-                                                der = der + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else if (sec == "4")
-                                {
-                                    while (true)
-                                    {
-                                        Console.WriteLine("Cuántos tripulantes ingresará?");
-                                        string? trip = Console.ReadLine();
-                                        if (int.TryParse(trip, out int numero))
-                                        {
-                                            if (numero <= tripulantes && numero >= 0)
-                                            {
-                                                sector4 = sector4 + numero;
-                                                tripulantes = tripulantes - numero;
-                                                der = der + numero;
-                                                break;
-                                            }
-                                            else if (numero > tripulantes || numero < 0)
-                                            {
-                                                Console.WriteLine("ERROR: Tripulantes insuficientes.");
-                                                Console.WriteLine($"Solo hay {tripulantes} disponibles, reingrese datos:");
-                                                trip = Console.ReadLine();
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Ingrese una cantidad válida:");
-                                                trip = Console.ReadLine();
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("ERROR: Ingrese una cantidad válida.");
-                                            trip = Console.ReadLine();
-                                        }
-                                    }
-                                    break;
-                                }
-                                else
-                                {
-                                    Console.WriteLine("ERROR: Ingrese un número entero.");
-                                    sec = Console.ReadLine();
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("ERROR: El dato ingresado es incorrecto o no existe.");
-                            Console.WriteLine("Solo hay 2 zonas:    [1] o [2]");
-                            zonas = Console.ReadLine();
-                        }
-                        break;
                     }
                     else
                     {
-                        Console.WriteLine("ERROR: El dato ingresado no existe o es incorrecto.");
-                        Console.WriteLine("Solo es [Izq], [Der], [1] o [2].");
-                        alas = Console.ReadLine();
+                        Console.WriteLine("ERROR: Ingrese un número entero válido.");
                     }
                 }
-                if(tripulantes > 0)
-                {
-                    Console.WriteLine($"Aún hay {tripulantes} tripulantes disponibles.");
-                }
-                else
-                {
-                    break;
-                }
+
+                // 5. CARGAR DIRECTAMENTE EN EL ARRAY TRIDIMENSIONAL
+                CargarNave(naveActual, indiceAla, indiceComponente, indiceSector, cantidadTripulantes);
+                Console.WriteLine("\n-> Datos guardados correctamente en la nave.\n");
             }
+
+            // Al terminar el bucle de tripulantes, mostramos el resumen de la nave cargada
+            MostrarNave(naveActual, j + 1);
+            Console.WriteLine("Presiona una tecla para continuar al siguiente turno...");
+            Console.ReadKey();
+            Console.Clear();
         }
-        for(int a = 0; a < nave1.GetLength(0); a++)
-        { 
-            for(int b = 0; b < nave1.GetLength(1); b++)
-            {
-                for(int c = 0; c < nave1.GetLength(2); c++)
-                {
-                    
-                }
-            }
-        } 
+
+        Console.WriteLine("¡Ambas naves han sido cargadas exitosamente! Comienza la fase de batalla.");
+        // Aquí continúa tu lógica de juego/ataque...
     }
 }
